@@ -1,12 +1,15 @@
 
 
 import {
-  init,
-  Sprite,
   GameLoop,
+  Sprite,
+  Text,
+  bindKeys,
   degToRad,
+  emit,
+  init,
+  initKeys,
   on,
-  emit
 } from 'kontra';
 
 let { canvas, context } = init(main);
@@ -36,12 +39,20 @@ const GREEN = 1
 const BLUE = 2
 const ALPHA = 3
 
+class Ant extends Sprite.class {
+  draw() {
+    context.rotate(degToRad(this.angle))
+    super.draw()
+    context.rotate(degToRad(-this.angle))
+  }
+}
+
 const createAnt = (color = 'black') => {
-  ants.push(Sprite({
+  ants.push(new Ant({
     x: canvas.width / 2,        // starting x,y position of the sprite
     y: canvas.height / 2,
     color: color,               // fill color of the sprite rectangle
-    width: antSize,             // width and height of the sprite rectangle
+    width: antSize * 2,             // width and height of the sprite rectangle
     height: antSize,
     angle: 360 * Math.random(),
   }))
@@ -49,13 +60,24 @@ const createAnt = (color = 'black') => {
 
 
 const isBlue = ([red, green, blue, alpha]) => {
-  return blue > 200 && red < 100 && green < 100
+  return red < 150 && green < 150
 }
 
 const lookoutAngle = 90
 const lookoutDistance = 2 * trailRadius
 const updateDirection = (ant, chance, canvasCache) => {
   if (canvasCache) {
+    const front = getPixel(
+      ant.x + ant.dx * lookoutDistance,
+      ant.y + ant.dy * lookoutDistance,
+      canvasCache
+    )
+    if (isBlue(front)) {
+      ant.dx = speed * Math.cos(degToRad(ant.angle))
+      ant.dy = speed * Math.sin(degToRad(ant.angle))
+      return; // Maintain current route
+    }
+
     const dxRight = lookoutDistance * Math.cos(degToRad(ant.angle - lookoutAngle))
     const dyRight = lookoutDistance * Math.sin(degToRad(ant.angle - lookoutAngle))
     const dxLeft = lookoutDistance * Math.cos(degToRad(ant.angle + lookoutAngle))
@@ -146,18 +168,31 @@ const fade = () => {
 }
 
 
-createAnt('red')
-createAnt('orange')
-createAnt('pink')
-createAnt('yellow')
-createAnt('green')
-createAnt('lime')
-createAnt('gray')
-createAnt('brown')
-createAnt('black')
+// createAnt('red')
+// createAnt('orange')
+// createAnt('pink')
+// createAnt('yellow')
+// createAnt('green')
+// createAnt('lime')
+// createAnt('gray')
+// createAnt('brown')
+// createAnt('black')
+// Array.from({ length: 10 }, () => {
+//   createAnt()
+// });
+
+let status = Text({
+  text: '60 FPS\n0 ants',
+  font: '12px Arial',
+  color: 'black',
+  x: 10,
+  y: 10,
+  textAlign: 'left'
+});
 
 
 let fadeTimer = 0
+let timer = 0
 let loop = GameLoop({  // create the main game loop
   update: function () { // update the game state
     try {
@@ -183,12 +218,21 @@ let loop = GameLoop({  // create the main game loop
       if (fadeTimer <= 0) {
         fade()
         fadeTimer = 100
+        status.text = `${Math.round(1000 / (Date.now() - timer))} FPS\n${ants.length} ants`
       }
+      status.render()
+      timer = Date.now()
     } catch (error) {
       console.error(error);
       emit('halt')
     }
   }
+});
+
+initKeys();
+bindKeys('space', function () {
+  console.log('createAnt');
+  createAnt()
 });
 
 on('halt', () => {
