@@ -10,7 +10,8 @@ GREEN = 1
 BLUE = 2
 ALPHA = 3
 
-lookoutAngle = 90
+lookoutAngle = 60
 lookoutDistance = 2 * trailRadius
+maxSteps = 800
 
 canvasSize = 800

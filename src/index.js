@@ -10,6 +10,7 @@ import {
   on,
 } from 'kontra';
 import './constants'
+import { getBlueness } from '../src/util'
 
 let { canvas, context } = init(main);
 
@@ -43,21 +44,28 @@ const createAnt = (color = 'black') => {
     width: antSize * 2,             // width and height of the sprite rectangle
     height: antSize,
     angle: 360 * Math.random(),
+    distance: 0,
+    step: 1,
   }))
 }
 
-const isBlue = ([red, green, blue, alpha]) => {
-  return red < 150 && green < 150
-}
+// const isBlue = ([red, green, blue, alpha]) => {
+//   return red < 150 && green < 150
+// }
 
 const updateDirection = (ant, chance, canvasCache) => {
   if (canvasCache) {
+    ant.distance += ant.step
+    if (ant.distance > maxSteps || ant.distance < 0) {
+      ant.angle -= 180
+      ant.step *= -1
+    }
     const front = getPixel(
       ant.x + ant.dx * lookoutDistance,
       ant.y + ant.dy * lookoutDistance,
       canvasCache
     )
-    if (isBlue(front)) {
+    if (getBlueness(front) > 0.5) {
       ant.dx = speed * Math.cos(degToRad(ant.angle))
       ant.dy = speed * Math.sin(degToRad(ant.angle))
       return; // Maintain current route
@@ -70,11 +78,15 @@ const updateDirection = (ant, chance, canvasCache) => {
     const right = getPixel(ant.x + dxRight, ant.y + dyRight, canvasCache)
     const left = getPixel(ant.x + dxLeft, ant.y + dyLeft, canvasCache)
 
-    if (isBlue(right)) {
+    const rightBlueness = getBlueness(right)
+    const leftBlueness = getBlueness(left)
+    const turnChance = Math.random()
+
+    if (rightBlueness > leftBlueness && rightBlueness > turnChance) {
       ant.angle = ant.angle - lookoutAngle / 3
       ant.dx = speed * Math.cos(degToRad(ant.angle))
       ant.dy = speed * Math.sin(degToRad(ant.angle))
-    } else if (isBlue(left)) {
+    } else if (leftBlueness > rightBlueness && leftBlueness > turnChance) {
       ant.angle = ant.angle + lookoutAngle / 3
       ant.dx = speed * Math.cos(degToRad(ant.angle))
       ant.dy = speed * Math.sin(degToRad(ant.angle))
@@ -206,7 +218,6 @@ let loop = GameLoop({  // create the main game loop
 
 initKeys();
 bindKeys('space', function () {
-  console.log('createAnt');
   createAnt()
 });
 

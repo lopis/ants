@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "webpack-dev-server --mode development --config webpack.config.js",
     "build": "webpack --mode=production --config webpack.config.js",
-    "postbuild": "node postbuild.js"
+    "postbuild": "node postbuild.js",
+    "test": "node tests/index.js"
   },
   "dependencies": {
     "kontra": "^7.3.1"
