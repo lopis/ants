@@ -1,5 +1,3 @@
-
-
 import {
   GameLoop,
   Sprite,
@@ -11,38 +9,28 @@ import {
   initKeys,
   on,
 } from 'kontra';
+import './constants'
 
 let { canvas, context } = init(main);
 
-canvas.height = innerHeight
-canvas.width = innerWidth
+canvas.height = canvasSize
+canvas.width = canvasSize
 
-
-back.height = innerHeight
-back.width = innerWidth
+back.height = canvasSize
+back.width = canvasSize
 window.ctb = back.getContext`2d`
 ctb.fillStyle = 'white'//`#8ab073`
-ctb.fillRect(0, 0, innerWidth, innerHeight)
-
+ctb.fillRect(0, 0, canvasSize, canvasSize)
 
 let ants = [];
 
-const antSize = 4
-const trailRadius = 2
-const chance = 0.05
-const change = 10
-const speed = 0.4
-const padding = 10
-
-const RED = 0
-const GREEN = 1
-const BLUE = 2
-const ALPHA = 3
 
 class Ant extends Sprite.class {
   draw() {
     context.rotate(degToRad(this.angle))
+    context.translate(-(this.height / 2), -(this.height / 2))
     super.draw()
+    context.translate(-(this.height / 2), (this.height / 2))
     context.rotate(degToRad(-this.angle))
   }
 }
@@ -58,13 +46,10 @@ const createAnt = (color = 'black') => {
   }))
 }
 
-
 const isBlue = ([red, green, blue, alpha]) => {
   return red < 150 && green < 150
 }
 
-const lookoutAngle = 90
-const lookoutDistance = 2 * trailRadius
 const updateDirection = (ant, chance, canvasCache) => {
   if (canvasCache) {
     const front = getPixel(
@@ -84,24 +69,12 @@ const updateDirection = (ant, chance, canvasCache) => {
     const dyLeft = lookoutDistance * Math.sin(degToRad(ant.angle + lookoutAngle))
     const right = getPixel(ant.x + dxRight, ant.y + dyRight, canvasCache)
     const left = getPixel(ant.x + dxLeft, ant.y + dyLeft, canvasCache)
-    // console.log(right, left);
-
-    // ctb.fillStyle = 'magenta'
-    // ctb.fillRect(Math.round(ant.x + dxRight), Math.round(ant.y + dyRight), 1, 1)
-    // ctb.fillStyle = 'cyan'
-    // ctb.fillRect(Math.round(ant.x + dxLeft), Math.round(ant.y + dyLeft), 1, 1)
 
     if (isBlue(right)) {
-      // ctb.fillStyle = 'magenta'
-      // ctb.rect(Math.round(ant.x + dxRight) - 1, Math.round(ant.y + dyRight) - 1, 3, 3)
-      // console.log('Found trail on the right');
       ant.angle = ant.angle - lookoutAngle / 3
       ant.dx = speed * Math.cos(degToRad(ant.angle))
       ant.dy = speed * Math.sin(degToRad(ant.angle))
     } else if (isBlue(left)) {
-      // ctb.fillStyle = 'magenta'
-      // ctb.fillRect(Math.round(ant.x + dxLeft) - 1, Math.round(ant.y + dyLeft) - 1, 3, 3)
-      // console.log('Found trail on the left');
       ant.angle = ant.angle + lookoutAngle / 3
       ant.dx = speed * Math.cos(degToRad(ant.angle))
       ant.dy = speed * Math.sin(degToRad(ant.angle))
@@ -158,13 +131,15 @@ const getPixel = (x, y, cache) => {
 }
 
 const trail = (ant) => {
-  ctb.fillStyle = 'blue' //'#738ab0'
+  ctb.translate(-(trailRadius / 2), -(trailRadius / 2))
+  ctb.fillStyle = 'rgba(0, 0, 255, 0.2)'
   ctb.fillRect(Math.round(ant.x), Math.round(ant.y), trailRadius, trailRadius)
+  ctb.translate((trailRadius / 2), (trailRadius / 2))
 }
 
 const fade = () => {
   ctb.fillStyle = `rgba(255,255,255,0.05)`
-  ctb.fillRect(0, 0, innerWidth, innerHeight)
+  ctb.fillRect(0, 0, canvasSize, canvasSize)
 }
 
 
@@ -184,7 +159,7 @@ const fade = () => {
 let status = Text({
   text: '60 FPS\n0 ants',
   font: '12px Arial',
-  color: 'black',
+  color: '#3c5f49',
   x: 10,
   y: 10,
   textAlign: 'left'
@@ -202,6 +177,7 @@ let loop = GameLoop({  // create the main game loop
         checkBoundaries(ant)
         updateDirection(ant, chance, canvasCache)
         ant.update()
+        trail(ant)
       })
     } catch (error) {
       console.error(error);
@@ -212,7 +188,6 @@ let loop = GameLoop({  // create the main game loop
     try {
       ants.forEach(ant => {
         ant.render()
-        trail(ant)
       })
       fadeTimer--
       if (fadeTimer <= 0) {

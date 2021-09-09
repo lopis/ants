@@ -11,28 +11,35 @@
       margin: 0;
       height: 100vh;
       width: 100vw;
-      position: relative;
       image-rendering: crisp-edges;
       image-rendering: optimizespeed;
+      background: #73b08a;
+      text-align: center;
+    }
+
+    .container {
+      position: relative;
+      display: inline-flex;
     }
 
     canvas {
-      height: 100%;
-      width: 100%;
       position: absolute;
-      top: 0;
-      left: 0;
+      height: 800px;
+      width: 800px;
+      left: -400px;
     }
 
     #back {
-      opacity: 0.25;
+      opacity: 0.5;
     }
   </style>
 </head>
 
 <body>
-  <canvas id="back"></canvas>
-  <canvas id="main"></canvas>
+  <div class="container">
+    <canvas id="back"></canvas>
+    <canvas id="main"></canvas>
+  </div>
 </body>
 
 </html>
