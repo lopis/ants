@@ -36,12 +36,15 @@ class Ant extends Sprite.class {
   }
 }
 
+let image = new Image();
+image.src = 'ant.png';
 const createAnt = (color = 'black') => {
   ants.push(new Ant({
     x: canvas.width / 2,        // starting x,y position of the sprite
     y: canvas.height / 2,
-    color: color,               // fill color of the sprite rectangle
-    width: antSize * 2,             // width and height of the sprite rectangle
+    // color: color,               // fill color of the sprite rectangle
+    image: image,
+    width: antSize,             // width and height of the sprite rectangle
     height: antSize,
     angle: 360 * Math.random(),
     distance: 0,
@@ -144,7 +147,7 @@ const getPixel = (x, y, cache) => {
 
 const trail = (ant) => {
   ctb.translate(-(trailRadius / 2), -(trailRadius / 2))
-  ctb.fillStyle = 'rgba(0, 0, 255, 0.2)'
+  ctb.fillStyle = 'rgba(0, 0, 255, 0.1)'
   ctb.fillRect(Math.round(ant.x), Math.round(ant.y), trailRadius, trailRadius)
   ctb.translate((trailRadius / 2), (trailRadius / 2))
 }

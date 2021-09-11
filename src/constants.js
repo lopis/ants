@@ -1,4 +1,4 @@
-antSize = 4
+antSize = 25
 trailRadius = 2
 chance = 0.05
 change = 10
