@@ -1,6 +1,7 @@
 import {
   GameLoop,
   Sprite,
+  SpriteSheet,
   Text,
   bindKeys,
   degToRad,
@@ -11,6 +12,7 @@ import {
 } from 'kontra';
 import './constants'
 import { getBlueness } from '../src/util'
+import antSprite from './ant.png';
 
 let { canvas, context } = init(main);
 
@@ -24,7 +26,28 @@ ctb.fillStyle = 'white'//`#8ab073`
 ctb.fillRect(0, 0, canvasSize, canvasSize)
 
 let ants = [];
+let antQueue = 0;
+let isCreatingAnt = false
 
+let image = new Image();
+let antSpriteSheet
+image.src = antSprite;
+image.onload = () => {
+  antSpriteSheet = SpriteSheet({
+    image: image,
+    frameWidth: 25,
+    frameHeight: 25,
+    animations: {
+      idle: {
+        frames: '2'
+      },
+      walk: {
+        frames: [0, 1, 2, 3, 4, 5, 6, 7],
+        frameRate: 16
+      }
+    }
+  })
+}
 
 class Ant extends Sprite.class {
   draw() {
@@ -36,20 +59,36 @@ class Ant extends Sprite.class {
   }
 }
 
-let image = new Image();
-image.src = 'ant.png';
+const scheduleNewAnt = () => {
+  antQueue++
+  if (isCreatingAnt) {
+    return
+  }
+  isCreatingAnt = true
+  createAnt()
+}
+
 const createAnt = (color = 'black') => {
-  ants.push(new Ant({
+  if (antQueue === 0) {
+    return
+  }
+  antQueue--
+  const ant = new Ant({
     x: canvas.width / 2,        // starting x,y position of the sprite
     y: canvas.height / 2,
     // color: color,               // fill color of the sprite rectangle
-    image: image,
-    width: antSize,             // width and height of the sprite rectangle
-    height: antSize,
-    angle: 360 * Math.random(),
-    distance: 0,
+    // width: antSize,             // width and height of the sprite rectangle
+    // height: antSize,
+    angle: 0, //360 * Math.random(),
+    //distance: 0, // Doesn't work very well
     step: 1,
-  }))
+    // anchor: { x: 0.5, y: 0.5 },
+    animations: antSpriteSheet.animations,
+    currentAnimation: antSpriteSheet.animations.walk,
+  })
+  ant.playAnimation('walk');
+  ants.push(ant)
+  setTimeout(createAnt, 1000)
 }
 
 // const isBlue = ([red, green, blue, alpha]) => {
@@ -58,11 +97,11 @@ const createAnt = (color = 'black') => {
 
 const updateDirection = (ant, chance, canvasCache) => {
   if (canvasCache) {
-    ant.distance += ant.step
-    if (ant.distance > maxSteps || ant.distance < 0) {
-      ant.angle -= 180
-      ant.step *= -1
-    }
+    // ant.distance += ant.step
+    // if (ant.distance > maxSteps || ant.distance < 0) {
+    //   ant.angle -= 180
+    //   ant.step *= -1
+    // }
     const front = getPixel(
       ant.x + ant.dx * lookoutDistance,
       ant.y + ant.dy * lookoutDistance,
@@ -221,7 +260,7 @@ let loop = GameLoop({  // create the main game loop
 
 initKeys();
 bindKeys('space', function () {
-  createAnt()
+  scheduleNewAnt()
 });
 
 on('halt', () => {

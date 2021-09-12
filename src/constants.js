@@ -12,6 +12,6 @@ ALPHA = 3
 
 lookoutAngle = 60
 lookoutDistance = 2 * trailRadius
-maxSteps = 800
+maxSteps = 900
 
 canvasSize = 800

@@ -10,6 +10,18 @@ module.exports = (env, argv) => {
       path: path.resolve(__dirname, 'dist'),
       filename: 'index.js',
     },
+    module: {
+      rules: [
+        {
+          test: /\.(png|jpe?g|gif|svg)$/i,
+          use: [
+            {
+              loader: 'file-loader',
+            },
+          ],
+        },
+      ],
+    },
     optimization: {
       usedExports: true,
     },
