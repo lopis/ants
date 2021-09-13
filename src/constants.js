@@ -2,7 +2,7 @@ antSize = 25
 trailRadius = 2
 chance = 0.05
 change = 10
-speed = 0.4
+speed = 0.6
 padding = 10
 
 RED = 0
@@ -14,4 +14,5 @@ lookoutAngle = 60
 lookoutDistance = 2 * trailRadius
 maxSteps = 900
 
-canvasSize = 800
+canvasHeight = window.innerHeight
+canvasWidth = window.innerWidth

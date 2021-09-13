@@ -14,19 +14,14 @@
       image-rendering: crisp-edges;
       image-rendering: optimizespeed;
       background: #73b08a;
-      text-align: center;
-    }
-
-    .container {
-      position: relative;
-      display: inline-flex;
+      background-image: url('grass.png');
     }
 
     canvas {
       position: absolute;
-      height: 800px;
+      /* height: 800px;
       width: 800px;
-      left: -400px;
+      left: -400px; */
     }
 
     #back {
@@ -36,10 +31,8 @@
 </head>
 
 <body>
-  <div class="container">
-    <canvas id="back"></canvas>
-    <canvas id="main"></canvas>
-  </div>
+  <canvas id="back"></canvas>
+  <canvas id="main"></canvas>
 </body>
 
 </html>

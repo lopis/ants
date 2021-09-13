@@ -4,11 +4,14 @@ import {
   SpriteSheet,
   Text,
   bindKeys,
+  collides,
   degToRad,
   emit,
   init,
   initKeys,
+  initPointer,
   on,
+  track,
 } from 'kontra';
 import './constants'
 import { getBlueness } from '../src/util'
@@ -17,14 +20,14 @@ import holeSprite from './hole.png';
 
 let { canvas, context } = init(main);
 
-canvas.height = canvasSize
-canvas.width = canvasSize
+canvas.height = canvasHeight
+canvas.width = canvasWidth
 
-back.height = canvasSize
-back.width = canvasSize
+back.height = canvasHeight
+back.width = canvasWidth
 window.ctb = back.getContext`2d`
 ctb.fillStyle = 'white'//`#8ab073`
-ctb.fillRect(0, 0, canvasSize, canvasSize)
+ctb.fillRect(0, 0, canvasWidth, canvasHeight)
 
 let ants = [];
 let antQueue = 0;
@@ -87,27 +90,51 @@ const createAnt = (color = 'black') => {
     return
   }
   antQueue--
+  const angle = 360 * Math.random()
   const ant = new Ant({
-    x: canvas.width / 2,        // starting x,y position of the sprite
-    y: canvas.height / 2,
+    x: canvas.width / 2 + 10 * Math.cos(degToRad(angle)),        // starting x,y position of the sprite
+    y: canvas.height / 2 + 10 * Math.sin(degToRad(angle)),
     // color: color,               // fill color of the sprite rectangle
-    // width: antSize,             // width and height of the sprite rectangle
-    // height: antSize,
-    angle: 0, //360 * Math.random(),
+    width: antSize,             // width and height of the sprite rectangle
+    height: antSize,
+    angle: angle,
     //distance: 0, // Doesn't work very well
-    step: 1,
+    // step: 1,
     // anchor: { x: 0.5, y: 0.5 },
     animations: antSpriteSheet.animations,
     currentAnimation: antSpriteSheet.animations.walk,
+    timeSinceLastCollision: 0,
+    speed: speed,
+    onDown() {
+      this.speed = 2.5 * speed
+      this.timeout = setTimeout(() => {
+        this.speed = speed
+      }, 3000)
+    }
   })
   ant.playAnimation('walk');
   ants.push(ant)
+  track(ant);
   setTimeout(createAnt, 1000)
 }
 
-// const isBlue = ([red, green, blue, alpha]) => {
-//   return red < 150 && green < 150
-// }
+const collisionAngle = 90
+const checkCollisions = (ant, otherAnts) => {
+  let hasCollision = false
+  otherAnts.forEach(otherAnt => {
+    if (Date.now() - otherAnt.timeSinceLastCollision > 500) {
+      if (collides(ant, otherAnt)) {
+        hasCollision = true
+        otherAnt.angle += collisionAngle
+      }
+      otherAnt.timeSinceLastCollision = Date.now()
+    }
+  })
+  if (hasCollision) {
+    ant.angle += collisionAngle
+    console.log('collision');
+  }
+}
 
 const updateDirection = (ant, chance, canvasCache) => {
   if (canvasCache) {
@@ -122,8 +149,8 @@ const updateDirection = (ant, chance, canvasCache) => {
       canvasCache
     )
     if (getBlueness(front) > 0.5) {
-      ant.dx = speed * Math.cos(degToRad(ant.angle))
-      ant.dy = speed * Math.sin(degToRad(ant.angle))
+      ant.dx = ant.speed * Math.cos(degToRad(ant.angle))
+      ant.dy = ant.speed * Math.sin(degToRad(ant.angle))
       return; // Maintain current route
     }
 
@@ -140,20 +167,20 @@ const updateDirection = (ant, chance, canvasCache) => {
 
     if (rightBlueness > leftBlueness && rightBlueness > turnChance) {
       ant.angle = ant.angle - lookoutAngle / 3
-      ant.dx = speed * Math.cos(degToRad(ant.angle))
-      ant.dy = speed * Math.sin(degToRad(ant.angle))
+      ant.dx = ant.speed * Math.cos(degToRad(ant.angle))
+      ant.dy = ant.speed * Math.sin(degToRad(ant.angle))
     } else if (leftBlueness > rightBlueness && leftBlueness > turnChance) {
       ant.angle = ant.angle + lookoutAngle / 3
-      ant.dx = speed * Math.cos(degToRad(ant.angle))
-      ant.dy = speed * Math.sin(degToRad(ant.angle))
+      ant.dx = ant.speed * Math.cos(degToRad(ant.angle))
+      ant.dy = ant.speed * Math.sin(degToRad(ant.angle))
     }
   }
 
   // Random change of direction
   if (Math.random() < chance) {
     ant.angle = ant.angle + (Math.random() * change * 2 - change)
-    ant.dx = speed * Math.cos(degToRad(ant.angle))
-    ant.dy = speed * Math.sin(degToRad(ant.angle))
+    ant.dx = ant.speed * Math.cos(degToRad(ant.angle))
+    ant.dy = ant.speed * Math.sin(degToRad(ant.angle))
   }
 }
 
@@ -207,7 +234,7 @@ const trail = (ant) => {
 
 const fade = () => {
   ctb.fillStyle = `rgba(255,255,255,0.05)`
-  ctb.fillRect(0, 0, canvasSize, canvasSize)
+  ctb.fillRect(0, 0, canvasWidth, canvasHeight)
 }
 
 
@@ -241,8 +268,9 @@ let loop = GameLoop({  // create the main game loop
     try {
       // Use a full canvas cache to avoid doing getImageData for each ant
       const canvasCache = ctb.getImageData(0, 0, back.width, back.height).data
-      ants.forEach(ant => {
+      ants.forEach((ant, index) => {
         checkBoundaries(ant)
+        checkCollisions(ant, ants.slice(index + 1))
         updateDirection(ant, chance, canvasCache)
         ant.update()
         trail(ant)
@@ -274,6 +302,7 @@ let loop = GameLoop({  // create the main game loop
 });
 
 initKeys();
+initPointer();
 bindKeys('space', function () {
   scheduleNewAnt()
 });
