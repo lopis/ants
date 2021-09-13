@@ -61,8 +61,17 @@ holePNG.onload = () => {
   hole = Sprite({
     x: canvas.width / 2,        // starting x,y position of the sprite
     y: canvas.height / 2,
+    height: 50,
+    width: 50,
     image: holePNG,
-    anchor: { x: 0.5, y: 0.5 }
+    anchor: { x: 0.5, y: 0.5 },
+    onDown() {
+      console.log('click hole');
+      scheduleNewAnt()
+      if (loop.isStopped) {
+        loop.start();
+      }
+    },
   })
   emit('ready')
 }
@@ -337,6 +346,7 @@ on('ready', () => {
     });
   });
   intro.render();
+  track(hole);
   hole.render();
 })
 // loop.start();    // start the game
