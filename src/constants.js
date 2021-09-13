@@ -13,6 +13,7 @@ ALPHA = 3
 lookoutAngle = 60
 lookoutDistance = 2 * trailRadius
 maxSteps = 900
+angleDeltaStep = 10
 
 canvasHeight = window.innerHeight
 canvasWidth = window.innerWidth

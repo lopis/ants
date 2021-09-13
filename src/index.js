@@ -12,6 +12,7 @@ import {
   initPointer,
   on,
   track,
+  unbindKeys,
 } from 'kontra';
 import './constants'
 import { getBlueness } from '../src/util'
@@ -63,6 +64,7 @@ holePNG.onload = () => {
     image: holePNG,
     anchor: { x: 0.5, y: 0.5 }
   })
+  emit('ready')
 }
 
 class Ant extends Sprite.class {
@@ -98,6 +100,7 @@ const createAnt = (color = 'black') => {
     width: antSize,             // width and height of the sprite rectangle
     height: antSize,
     angle: angle,
+    angleDelta: 0,
     //distance: 0, // Doesn't work very well
     // step: 1,
     // anchor: { x: 0.5, y: 0.5 },
@@ -138,11 +141,16 @@ const checkCollisions = (ant, otherAnts) => {
 
 const updateDirection = (ant, chance, canvasCache) => {
   if (canvasCache) {
-    // ant.distance += ant.step
-    // if (ant.distance > maxSteps || ant.distance < 0) {
-    //   ant.angle -= 180
-    //   ant.step *= -1
-    // }
+    if (ant.angleDelta > 0) {
+      const delta = Math.min(angleDeltaStep, ant.angleDelta)
+      ant.angle += delta
+      ant.angleDelta -= delta
+    } else if (ant.angleDelta < 0) {
+      const delta = Math.max(-angleDeltaStep, ant.angleDelta)
+      ant.angle += delta
+      ant.angleDelta -= delta
+    }
+
     const front = getPixel(
       ant.x + ant.dx * lookoutDistance,
       ant.y + ant.dy * lookoutDistance,
@@ -166,11 +174,13 @@ const updateDirection = (ant, chance, canvasCache) => {
     const turnChance = Math.random()
 
     if (rightBlueness > leftBlueness && rightBlueness > turnChance) {
-      ant.angle = ant.angle - lookoutAngle / 3
+      // ant.angle = ant.angle - lookoutAngle / 3
+      ant.angleDelta = -lookoutAngle / 3
       ant.dx = ant.speed * Math.cos(degToRad(ant.angle))
       ant.dy = ant.speed * Math.sin(degToRad(ant.angle))
     } else if (leftBlueness > rightBlueness && leftBlueness > turnChance) {
-      ant.angle = ant.angle + lookoutAngle / 3
+      // ant.angle = ant.angle + lookoutAngle / 3
+      ant.angleDelta = lookoutAngle / 3
       ant.dx = ant.speed * Math.cos(degToRad(ant.angle))
       ant.dy = ant.speed * Math.sin(degToRad(ant.angle))
     }
@@ -178,7 +188,8 @@ const updateDirection = (ant, chance, canvasCache) => {
 
   // Random change of direction
   if (Math.random() < chance) {
-    ant.angle = ant.angle + (Math.random() * change * 2 - change)
+    // ant.angle = ant.angle + (Math.random() * change * 2 - change)
+    ant.angleDelta = Math.random() * change * 2 - change
     ant.dx = ant.speed * Math.cos(degToRad(ant.angle))
     ant.dy = ant.speed * Math.sin(degToRad(ant.angle))
   }
@@ -237,20 +248,6 @@ const fade = () => {
   ctb.fillRect(0, 0, canvasWidth, canvasHeight)
 }
 
-
-// createAnt('red')
-// createAnt('orange')
-// createAnt('pink')
-// createAnt('yellow')
-// createAnt('green')
-// createAnt('lime')
-// createAnt('gray')
-// createAnt('brown')
-// createAnt('black')
-// Array.from({ length: 10 }, () => {
-//   createAnt()
-// });
-
 let status = Text({
   text: '60 FPS\n0 ants',
   font: '12px Arial',
@@ -258,6 +255,24 @@ let status = Text({
   x: 10,
   y: 10,
   textAlign: 'left'
+});
+
+let intro = Text({
+  text: [
+    'Welcome to',
+    '  A n t   S p a c e.',
+    '',
+    'Press [space] or touch the nest to call an ant.',
+    'They tend to follow their friends, but they also',
+    'like to explore on their own.',
+    'Just sit back and enjoy your stay.'
+  ].join('\n'),
+  font: '16px Arial',
+  color: '#3c5f49',
+  x: 10,
+  y: 50,
+  textAlign: 'left',
+  lineHeight: 1.5,
 });
 
 
@@ -310,5 +325,19 @@ bindKeys('space', function () {
 on('halt', () => {
   loop.stop()
 })
-loop.start();    // start the game
+
+on('ready', () => {
+  bindKeys('space', function () {
+    unbindKeys('space')
+    scheduleNewAnt()
+    loop.start();
+
+    bindKeys('space', function () {
+      scheduleNewAnt()
+    });
+  });
+  intro.render();
+  hole.render();
+})
+// loop.start();    // start the game
 
