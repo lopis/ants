@@ -13,6 +13,7 @@ import {
 import './constants'
 import { getBlueness } from '../src/util'
 import antSprite from './ant.png';
+import holeSprite from './hole.png';
 
 let { canvas, context } = init(main);
 
@@ -49,6 +50,18 @@ image.onload = () => {
   })
 }
 
+let holePNG = new Image()
+let hole
+holePNG.src = holeSprite
+holePNG.onload = () => {
+  hole = Sprite({
+    x: canvas.width / 2,        // starting x,y position of the sprite
+    y: canvas.height / 2,
+    image: holePNG,
+    anchor: { x: 0.5, y: 0.5 }
+  })
+}
+
 class Ant extends Sprite.class {
   draw() {
     context.rotate(degToRad(this.angle))
@@ -70,6 +83,7 @@ const scheduleNewAnt = () => {
 
 const createAnt = (color = 'black') => {
   if (antQueue === 0) {
+    isCreatingAnt = false
     return
   }
   antQueue--
@@ -250,6 +264,7 @@ let loop = GameLoop({  // create the main game loop
         status.text = `${Math.round(1000 / (Date.now() - timer))} FPS\n${ants.length} ants`
       }
       status.render()
+      hole?.render()
       timer = Date.now()
     } catch (error) {
       console.error(error);
