@@ -150,15 +150,15 @@ const checkCollisions = (ant, otherAnts) => {
 
 const updateDirection = (ant, chance, canvasCache) => {
   if (canvasCache) {
-    if (ant.angleDelta > 0) {
-      const delta = Math.min(angleDeltaStep, ant.angleDelta)
-      ant.angle += delta
-      ant.angleDelta -= delta
-    } else if (ant.angleDelta < 0) {
-      const delta = Math.max(-angleDeltaStep, ant.angleDelta)
-      ant.angle += delta
-      ant.angleDelta -= delta
-    }
+    // if (ant.angleDelta > 0) {
+    //   const delta = Math.min(angleDeltaStep, ant.angleDelta)
+    //   ant.angle += delta
+    //   ant.angleDelta -= delta
+    // } else if (ant.angleDelta < 0) {
+    //   const delta = Math.max(-angleDeltaStep, ant.angleDelta)
+    //   ant.angle += delta
+    //   ant.angleDelta -= delta
+    // }
 
     const front = getPixel(
       ant.x + ant.dx * lookoutDistance,
@@ -183,13 +183,13 @@ const updateDirection = (ant, chance, canvasCache) => {
     const turnChance = Math.random()
 
     if (rightBlueness > leftBlueness && rightBlueness > turnChance) {
-      // ant.angle = ant.angle - lookoutAngle / 3
-      ant.angleDelta = -lookoutAngle / 3
+      ant.angle = ant.angle - lookoutAngle / 3
+      // ant.angleDelta = -lookoutAngle / 3
       ant.dx = ant.speed * Math.cos(degToRad(ant.angle))
       ant.dy = ant.speed * Math.sin(degToRad(ant.angle))
     } else if (leftBlueness > rightBlueness && leftBlueness > turnChance) {
-      // ant.angle = ant.angle + lookoutAngle / 3
-      ant.angleDelta = lookoutAngle / 3
+      ant.angle = ant.angle + lookoutAngle / 3
+      // ant.angleDelta = lookoutAngle / 3
       ant.dx = ant.speed * Math.cos(degToRad(ant.angle))
       ant.dy = ant.speed * Math.sin(degToRad(ant.angle))
     }
@@ -197,8 +197,8 @@ const updateDirection = (ant, chance, canvasCache) => {
 
   // Random change of direction
   if (Math.random() < chance) {
-    // ant.angle = ant.angle + (Math.random() * change * 2 - change)
-    ant.angleDelta = Math.random() * change * 2 - change
+    ant.angle = ant.angle + (Math.random() * change * 2 - change)
+    // ant.angleDelta = Math.random() * change * 2 - change
     ant.dx = ant.speed * Math.cos(degToRad(ant.angle))
     ant.dy = ant.speed * Math.sin(degToRad(ant.angle))
   }
